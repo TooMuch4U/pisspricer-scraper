@@ -1,22 +1,18 @@
 import sys
-from .countdown import Countdown
+from stores import countdown
 import api
 
 
+
 def main():
-    print('in main')
     args = sys.argv[1:]
-    print('count of args :: {}'.format(len(args)))
-    for arg in args:
-        print('passed argument :: {}'.format(arg))
     if args[0] == 'scrape':
-        print("scrape")
-        print("API Key: {}".format(api.token))
+        scrape_all()
 
 
 def scrape_all():
-    store = Countdown()
-    store.start()
+    cd = countdown.Countdown()
+    cd.update_locations()
 
 
 if __name__ == '__main__':

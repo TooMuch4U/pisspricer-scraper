@@ -11,10 +11,10 @@ global token
 url = os.getenv('pisspricer.url')
 email = os.environ.get('pisspricer.email')
 password = os.environ.get('pisspricer.password')
-print("url: {}".format(url))
 
 res = requests.post(url + '/users/login', json={"email": email, "password": password})
-if res.status_code != 200:
+if not res.ok:
     raise Exception("Connection to API failed")
 res_json = res.json()
 token = res_json["authToken"]
+headers = {"X-Authorization": token}
