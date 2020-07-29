@@ -22,14 +22,22 @@ class Countdown(generic_store.Store):
 
     @staticmethod
     def get_session_cookie():
-        """ Gets and returns a session cookie from countdown API """
+        """ Gets and returns a session cookie from countdown API
+
+            @return cookie  - Dict of cookie containing a Countdown API session id
+        """
         res = requests.get(Countdown.cd_base_url + Countdown.cd_items,
                            headers=Countdown.cd_headers)
         return {"ASP.NET_SessionId": res.cookies["ASP.NET_SessionId"]}
 
     @staticmethod
     def _get_new_stores(cd_json, cur_locations_json):
-        """ Returns only stores which aren't already in the database"""
+        """ Returns countdown stores which aren't already in the database
+
+            @param cd_json             - List of stores from Countdown API
+            @param cur_locations_json  - List of stores from pisspricer API
+            @returns post_list         - List of new stores from Countdown API
+        """
         post_list = []
         for location in cd_json["storeAreas"][0]["storeAddresses"]:
             # Check if store location is already in db
@@ -45,7 +53,11 @@ class Countdown(generic_store.Store):
 
     @staticmethod
     def _post_stores(post_list, regions):
-        """ Iterate through store locations and post to api """
+        """ Iterate through store locations and post to api
+
+            @param post_list    - List of stores from Countdown API to be posted to pisspricer api
+            @param regions      - List of regions from pisspricer API
+        """
 
         Countdown.print_progress(0, len(post_list), title=Countdown.name + " Inserting Stores")
         i = 0
@@ -88,10 +100,7 @@ class Countdown(generic_store.Store):
                 if not new_store_res.ok:
                     raise PisspricerApiException(new_store_res, f"posting to /stores {store}")
 
-            except GoogleApiException as err:
-                tools.log_error(err)
-
-            except PisspricerApiException as err:
+            except ApiException as err:
                 tools.log_error(err)
 
             finally:
@@ -101,7 +110,7 @@ class Countdown(generic_store.Store):
                     break
 
     def update_locations(self, debug=False):
-        """ Add all stores into database from Countdown API """
+        """ Get stores from Countdown API and add all stores which are new """
         task = "update_locations"
 
         # Get current locations from pisspricer api
@@ -129,6 +138,19 @@ class Countdown(generic_store.Store):
         # Post store to pisspricer api
         self._post_stores(post_list, regions_res.json())
 
+    def _set_store(self, internal_id):
+        """ Sets the current store of the session id
+
+            @param internal_id  - The internal id of the store to be used
+        """
+        task = "_set_store"
+        body = {"addressId": int(internal_id)}
+        res = requests.put(Countdown.cd_base_url + "/fulfilment/my/pickup-addresses",
+                           headers=self.cd_headers,
+                           cookies=self.cookies,
+                           json=body)
+        if not res.ok:
+            raise CountdownApiException(res, task)
 
     def update_all_items(self, debug=False):
         res = requests.get(Countdown.cd_base_url + Countdown.cd_items,
