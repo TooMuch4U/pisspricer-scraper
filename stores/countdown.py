@@ -15,6 +15,8 @@ class Countdown(generic_store.Store):
     cd_headers = {"x-requested-with": "OnlineShopping.WebApp"}
     store_url = "https://shop.countdown.co.nz"
     name = "Countdown"
+    page_lim = 120
+    page_lim_str = "&size=" + str(page_lim)
 
     def __init__(self):
         self.cookies = self.get_session_cookie()
@@ -153,20 +155,74 @@ class Countdown(generic_store.Store):
             raise CountdownApiException(res, task)
 
     def update_all_items(self, debug=False):
-        res = requests.get(Countdown.cd_base_url + Countdown.cd_items,
-                           headers=Countdown.cd_headers)
-        print(res.json())
-        time.sleep(10)
-        # A List of Items
-        items = list(range(0, 57))
-        l = len(items)
+        """ Updates all items for all known Countdown store """
+        task = "update_all_items"
 
-        # Initial call to print 0% progress
-        super().print_progress(0, l)
-        for i, item in enumerate(items):
-            # Do stuff...
-            time.sleep(0.1)
-            # Update Progress Bar
-            super().print_progress(i + 1, l)
+        # Get all current countdown stores
+        stores_res = requests.get(api.url + "/stores",
+                                  headers=api.headers,
+                                  params={"brandId": Countdown.cd_brand_id})
+        if not stores_res.ok:
+            raise PisspricerApiException(stores_res, task)
+        stores = stores_res.json()
 
+        # Get all current items
+        items_res = requests.get(api.url + "/items",
+                                 headers=api.headers)
+        if not items_res.ok:
+            raise PisspricerApiException(items_res, task)
+        items = items_res.json()
+        barcode_set = set()
+        for item in items:
+            set.add(item[''])
+
+        # Iterate through stores and get items from countdown api
+        cd_items_dict = self._get_cd_items(stores)
+
+    def _get_new_items(self, items):
+        return
+
+    def _get_cd_items(self, stores):
+        """
+        Gets all items from Countdown API
+
+        :param stores: List of Countdown stores from pisspricer api
+        :return: Dictionary of items {cd_id: items[]}
+        """
+        task = "_get_cd_items"
+        item_url = self.cd_base_url + self.cd_items + self.page_lim_str
+
+        items_dict = dict()
+        count = 0
+        self.print_progress(0, len(stores), task)
+        for store in stores:
+            try:
+                # Set store and get first page items
+                self._set_store(store["internalId"])
+                items_res = requests.get(item_url,
+                                         headers=self.cd_headers,
+                                         cookies=self.cookies)
+                if not items_res.ok:
+                    raise CountdownApiException(items_res, task)
+
+                # Generate url's
+                item_count = items_res.json()["products"]["totalItems"]
+                urls = tools.generate_url_pages(item_url + "&page=", item_count, self.page_lim, start_page=2)
+                responses = tools.async_get_list(urls, headers=self.cd_headers, cookies=self.cookies)
+
+                # Iterate through responses and make a list of data
+                items = items_res.json()["products"]["items"]
+                for res in responses:
+                    items += res['products']['items']
+
+                # Assign items to dict
+                items_dict[store["internalId"]] = items
+
+            except CountdownApiException as err:
+                tools.log(err)
+            finally:
+                count += 1
+                self.print_progress(count, len(stores), task)
+
+        return items_dict
 

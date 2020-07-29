@@ -2,6 +2,9 @@ import os
 import requests
 from custom_exceptions import *
 from datetime import datetime
+import aiohttp
+import asyncio
+import math
 
 
 # Print iterations progress
@@ -59,3 +62,76 @@ def log_error(error):
     f = open(file_name, "a")
     f.write(f"{dt_string}: {str(error)}\n")
     f.close()
+
+
+async def async_get(session, url, headers={}, cookies={}):
+    """Execute an http call async
+    Args:
+        session: context for making the http call
+        url: URL to call
+        headers: optional headers
+        cookies: option cookies
+    Return:
+        responses: A dict like object containing http response
+    """
+    async with session.get(url, headers=headers, cookies=cookies) as response:
+        resp = await response.json()
+        return resp
+
+
+async def create_async_get_list(urls, header, cookie):
+    """ Gather many HTTP call made async
+    Args:
+        urls: a list of string
+        header: header to use in all requests
+        cookie: cookie to use in all requests
+    Return:
+        responses: A list of dict like object containing http response
+    """
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for url in urls:
+            tasks.append(
+                async_get(
+                    session,
+                    url,
+                    headers=header,
+                    cookies=cookie
+                )
+            )
+        responses = await asyncio.gather(*tasks, return_exceptions=False)
+        return responses
+
+
+def async_get_list(urls, headers={}, cookies={}):
+    """
+    Async get a list of urls
+
+    :param urls: List of urls to get
+    :param headers: Header to be used for each request
+    :param cookies: Cookie to be used for each request
+    :return: List of responses
+    """
+    responses = asyncio.run(create_async_get_list(urls, header=headers, cookie=cookies))
+    return responses
+
+
+def generate_url_pages(url1, total, per_page, start_page=1, offset=0, url_end=""):
+    """
+    Generate urls for multi-page requests
+
+    :param url1: First half of URL (before page no)
+    :param url_end: Second half of URL (after page no)
+    :param total: Total number of items
+    :param per_page: Number of items per page
+    :param start_page: Page number to start from. 1 indexing
+    :param offset: Offset page numbers (-1 for 0 indexing pages)
+    :return: List of generated urls
+    """
+    urls = []
+    pages = math.ceil(total / per_page)
+    for p in range(start_page, pages+1):
+        url = f"{url1}{p + offset}{url_end}"
+        urls.append(url)
+    return urls
+

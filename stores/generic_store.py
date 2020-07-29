@@ -19,17 +19,16 @@ class Store(ABC):
 
         # Set length for either side of title
         length = 50
-        if iteration == 0:
-            dash_n = len('Progress:' + 'Complete') + length - len(title)
-            if dash_n % 2 == 0:
-                dash_l = dash_r = dash_n // 2
-            else:
-                dash_l = dash_r = dash_n // 2
-                dash_l += 1
+        dash_n = len('Progress:' + 'Complete') + length - len(title)
+        if dash_n % 2 == 0:
+            dash_l = dash_r = dash_n // 2
+        else:
+            dash_l = dash_r = dash_n // 2
+            dash_l += 1
 
-            # Print Title
-            print(dash_l * "-" + title + dash_r * "-")
-            sys.stdout.flush()
+        # Print Title
+        print(dash_l * "-" + title + dash_r * "-")
+        sys.stdout.flush()
 
 
         # Print bar
