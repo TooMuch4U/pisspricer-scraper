@@ -137,7 +137,7 @@ class Countdown(generic_store.Store):
         # Iterate through store locations and check which ones are new
         post_list = self._get_new_stores(cd_locations_res.json(), cur_locations_res.json())
 
-        # Post store to pisspricer api
+        # Post stores to pisspricer api
         self._post_stores(post_list, regions_res.json())
 
     def _set_store(self, internal_id):
@@ -166,28 +166,103 @@ class Countdown(generic_store.Store):
             raise PisspricerApiException(stores_res, task)
         stores = stores_res.json()
 
-        # Get all current items
-        items_res = requests.get(api.url + "/items",
-                                 headers=api.headers)
-        if not items_res.ok:
-            raise PisspricerApiException(items_res, task)
-        items = items_res.json()
-        barcode_set = set()
-        for item in items:
-            set.add(item[''])
+        # Get a set of barcodes from pisspricer
+        barcodes_res = requests.get(api.url + "/barcodes",
+                                    headers=api.headers)
+        tools.check_pisspricer_res(barcodes_res, task)
+        barcodes = barcodes_res.json()
 
         # Iterate through stores and get items from countdown api
         cd_items_dict = self._get_cd_items(stores)
 
-    def _get_new_items(self, items):
-        return
+        # Get categories
+        categories_res = requests.get(api.url + "/categories", headers=api.headers)
+        tools.check_pisspricer_res(categories_res, task)
+        categories = categories_res.json()
+
+        # Get a list of new items
+        new_items = self._get_new_items(cd_items_dict, barcodes, categories)
+        print(f"Items length: {len(new_items)}")
+
+        # Async post all new items
+        new_items_list = tools.async_post_list(new_items,
+                                                   api.url + "/items",
+                                                   api.headers)
+        # TODO Implement inserting price data
+
+    def _get_new_items(self, cd_items, barcodes, cur_cats):
+        """
+        Take a dictionary of countdown items and return a list of items that aren't in the database.
+        Categorys that aren't in database get added as it goes
+        :param cd_items: Dictionary of countdown items
+        :param barcodes: Dictionary of barcodes that are currently in the database
+        :return: List of json items that aren't in the database
+        """
+        new_items = []
+        new_barcodes = set()
+        for store_id, cats in cd_items.items():
+            for cat_obj in cats:
+                try:
+                    # Get cats
+                    cat = cat_obj["cat"].lower()
+                    subcat = None if cat_obj["subcat"] is None else cat_obj["subcat"].lower()
+
+                    # Create cat and subcat if they dont exist
+                    if cat not in cur_cats:
+                        # create cat
+                        cat_id = tools.post_category(cat)
+                        # Add to dict
+                        cur_cats[cat] = {
+                            "category": cat,
+                            "categoryId": cat_id,
+                            "subcategories": []
+                        }
+                    else:
+                        cat_id = cur_cats[cat]["categoryId"]
+
+                    subcat_id = None
+                    if subcat is not None:
+                        # Subcat specified
+                        subcats = cur_cats[cat]["subcategories"]
+                        for sub in subcats:
+                            if sub["subcategory"] == subcat:
+                                subcat_id = sub["subcategoryId"]
+                                break
+
+                        if subcat_id is None:
+                            # Subcat needs to be created
+                            subcat_id = tools.post_subcategory(cat_id, subcat)
+                            cur_cats[cat]["subcategories"].append({
+                                "subcategory": subcat,
+                                "subcategoryId": subcat_id
+                            })
+
+                    items = cat_obj["items"]
+                    for item in items:
+                        if item["barcode"] not in barcodes and item["barcode"] not in new_barcodes:
+                            volume = item["size"]["volumeSize"]
+                            new_item = {
+                                "name": item["name"] + (" " + volume if volume is not None else ""),
+                                "brand": item["brand"],
+                                "barcode": item["barcode"],
+                                "categoryId": cat_id
+                            }
+                            if subcat_id is not None:
+                                new_item["subcategoryId"] = subcat_id
+                            new_items.append(new_item)
+                            new_barcodes.add(item["barcode"])
+                except Exception as err:
+                    raise err
+                    tools.log_error(err)
+
+        return new_items
 
     def _get_cd_items(self, stores):
         """
         Gets all items from Countdown API
 
         :param stores: List of Countdown stores from pisspricer api
-        :return: Dictionary of items {cd_id: items[]}
+        :return: Dictionary of items {cd_id: [{'cat': str, 'subcat': str, 'items': []}] }
         """
         task = "_get_cd_items"
         item_url = self.cd_base_url + self.cd_items + self.page_lim_str
@@ -204,25 +279,58 @@ class Countdown(generic_store.Store):
                                          cookies=self.cookies)
                 if not items_res.ok:
                     raise CountdownApiException(items_res, task)
+                items_json = items_res.json()
 
                 # Generate url's
-                item_count = items_res.json()["products"]["totalItems"]
-                urls = tools.generate_url_pages(item_url + "&page=", item_count, self.page_lim, start_page=2)
+                cats = items_json["dasFacets"]
+                urls = []
+                for cat in cats:
+                    cat_name = cat["name"]
+                    cat_count = cat["productCount"]
+                    url_end = f"&dasFilter=Aisle;;{cat_name.replace(' ', '-').replace('&', '')};false"
+                    if "wine" in cat_name:
+                        cat_info = {
+                            "cat": "Wine",
+                            "subcat": cat_name
+                        }
+                    else:
+                        cat_info = {
+                            "cat": cat_name,
+                            "subcat": None
+                        }
+                    urls += tools.generate_url_pages(item_url + "&page=", cat_count, self.page_lim,
+                                                     url_end=url_end, carry=cat_info)
                 responses = tools.async_get_list(urls, headers=self.cd_headers, cookies=self.cookies)
 
                 # Iterate through responses and make a list of data
-                items = items_res.json()["products"]["items"]
+                items = []
                 for res in responses:
-                    items += res['products']['items']
+                    # Check if cat is already in list
+                    res_cat = res["carry"]
+                    cat_in_list = False
+                    index = -1
+                    for i, cat in enumerate(items):
+                        if cat["cat"] == res_cat["cat"] and cat["subcat"] == res_cat["subcat"]:
+                            cat_in_list = True
+                            index = i
+                            break
+
+                    if cat_in_list:
+                        items[i]["items"] += res['products']['items']
+                    else:
+                        items.append({"cat": res_cat["cat"],
+                                      "subcat": res_cat["subcat"],
+                                      "items": res['products']['items']})
 
                 # Assign items to dict
                 items_dict[store["internalId"]] = items
 
-            except CountdownApiException as err:
-                tools.log(err)
+            except Exception as err:
+                tools.log_error(err)
             finally:
                 count += 1
                 self.print_progress(count, len(stores), task)
+            break # TODO Remove to do all stores
 
         return items_dict
 

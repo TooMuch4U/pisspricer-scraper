@@ -5,6 +5,7 @@ from datetime import datetime
 import aiohttp
 import asyncio
 import math
+import api
 
 
 # Print iterations progress
@@ -74,8 +75,11 @@ async def async_get(session, url, headers={}, cookies={}):
     Return:
         responses: A dict like object containing http response
     """
-    async with session.get(url, headers=headers, cookies=cookies) as response:
+    url_string = url["url"]
+    carry = url.get("carry", None)
+    async with session.get(url_string, headers=headers, cookies=cookies) as response:
         resp = await response.json()
+        resp["carry"] = carry
         return resp
 
 
@@ -107,16 +111,69 @@ def async_get_list(urls, headers={}, cookies={}):
     """
     Async get a list of urls
 
-    :param urls: List of urls to get
+    :param urls: List of dicts {"url": url, "carry}
     :param headers: Header to be used for each request
     :param cookies: Cookie to be used for each request
     :return: List of responses
     """
-    responses = asyncio.run(create_async_get_list(urls, header=headers, cookie=cookies))
+    responses = asyncio.run(create_async_get_list(urls, headers, cookies))
     return responses
 
 
-def generate_url_pages(url1, total, per_page, start_page=1, offset=0, url_end=""):
+async def async_post(session, url, payload, headers={}, cookies={}):
+    """Execute an http call async
+    Args:
+        session: context for making the http call
+        url: URL to call
+        headers: optional headers
+        cookies: option cookies
+    Return:
+        responses: A dict like object containing http response
+    """
+    async with session.post(url, headers=headers, cookies=cookies, json=payload) as response:
+        resp = await response.json()
+        return resp
+
+
+async def create_async_post_list(payloads, url, header, cookie):
+    """ Gather many HTTP call made async
+    Args:
+        urls: a list of string
+        header: header to use in all requests
+        cookie: cookie to use in all requests
+    Return:
+        responses: A list of dict like object containing http response
+    """
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for payload in payloads:
+            tasks.append(
+                async_post(
+                    session,
+                    url,
+                    payload,
+                    headers=header,
+                    cookies=cookie
+                )
+            )
+        responses = await asyncio.gather(*tasks, return_exceptions=False)
+        return responses
+
+
+def async_post_list(payloads, url, headers={}, cookies={}):
+    """
+    Async get a list of urls
+
+    :param urls: List of dicts {"url": url, "payload": {}}
+    :param headers: Header to be used for each request
+    :param cookies: Cookie to be used for each request
+    :return: List of responses
+    """
+    responses = asyncio.run(create_async_post_list(payloads, url, headers, cookies))
+    return responses
+
+
+def generate_url_pages(url1, total, per_page, start_page=1, offset=0, url_end="", carry=None):
     """
     Generate urls for multi-page requests
 
@@ -126,12 +183,73 @@ def generate_url_pages(url1, total, per_page, start_page=1, offset=0, url_end=""
     :param per_page: Number of items per page
     :param start_page: Page number to start from. 1 indexing
     :param offset: Offset page numbers (-1 for 0 indexing pages)
+    :param carry: Data that can be carried to every url
     :return: List of generated urls
     """
     urls = []
     pages = math.ceil(total / per_page)
     for p in range(start_page, pages+1):
         url = f"{url1}{p + offset}{url_end}"
-        urls.append(url)
+        urls.append({"url": url, "carry": carry})
     return urls
 
+
+def check_pisspricer_res(res, task):
+    """
+    Checks pisspricer api response object. Throws error if not ok
+    :param res: Response object
+    :param task: Task string for exception
+    :return: None
+    """
+    if not res.ok:
+        raise PisspricerApiException(res, task)
+
+
+def get_cat_id(categories, cat, subcat):
+    """
+    Returns the categoryId and subcat Id if they exists
+    :param categories: Categories from pisspricer api
+    :param cat: Cat name to look for
+    :param subcat: Subcat name to look for
+    :return: catId, subcatId
+    """
+    cat_id = None
+    subcat_id = None
+    if cat in categories:
+        cat_id = categories[cat]["categoryId"]
+        for sub in categories[cat]["categoryId"]["subcategories"]:
+            if sub["subcategory"] == subcat:
+                subcat_id = sub["subcategoryId"]
+                break
+
+    return cat_id, subcat_id
+
+
+def post_category(cat):
+    """
+    Posts a new category to pisspricer api
+    :param cat: String for new category name
+    :return: Category ID
+    """
+    payload = {"category": cat}
+    res = requests.post(api.url + "/categories", json=payload, headers=api.headers)
+    if not res.ok:
+        raise PisspricerApiException(res, f"Posting category '{cat}'")
+    return res.json()["categoryId"]
+
+
+def post_subcategory(cat_id, subcat):
+    """
+    Post a subcategory to pisspricer api
+    :param cat_id: Parent category id
+    :param subcat: String for new subcat
+    :return: subcat_id
+    """
+    payload = {"subcategory": subcat}
+    res = requests.post(api.url + f"/categories/{cat_id}/subcategories",
+                        headers=api.headers,
+                        json=payload)
+    if not res.ok:
+        raise PisspricerApiException(res, f"Posting subcategory '{subcat}', for category with id {cat_id}")
+
+    return res.json()["subcategoryId"]

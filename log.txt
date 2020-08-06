@@ -19,3 +19,44 @@ Error using Pisspricer API while posting to /stores {'name': 'Countdown Levin', 
 28/07/2020 23:53:33: Error using Google API while Geocoding address 'Countdown Massey, Cnr Royal Oak & Moire Road,Massey,Massey Click & Collect,Auckland MSY, New Zealand', return data '{'results': [], 'status': 'ZERO_RESULTS'}'. A response code of 200 was returned.
 28/07/2020 23:54:02: Error using Google API while Geocoding address 'Countdown Massey, Cnr Royal Oak & Moire Road,Massey,Massey Click & Collect,Auckland MSY, New Zealand', return data '{'results': [], 'status': 'ZERO_RESULTS'}'. A response code of 200 was returned.
 29/07/2020 09:16:07: Error using Google API while Geocoding address 'Countdown Massey, Cnr Royal Oak & Moire Road,Massey,Massey Click & Collect,Auckland MSY, New Zealand', return data '{'results': [], 'status': 'ZERO_RESULTS'}'. A response code of 200 was returned.
+06/08/2020 22:35:49: 'Wine'
+06/08/2020 22:35:49: 'Wine'
+06/08/2020 22:35:49: 'Wine'
+06/08/2020 22:35:49: 'Wine'
+06/08/2020 22:36:31: Error using Pisspricer API while Posting category 'Beer'. A response code of 400 was returned.
+06/08/2020 22:36:31: Error using Pisspricer API while Posting category 'Cider'. A response code of 400 was returned.
+06/08/2020 22:36:31: Error using Pisspricer API while Posting category 'Wine'. A response code of 400 was returned.
+06/08/2020 22:36:31: Error using Pisspricer API while Posting category 'Wine'. A response code of 400 was returned.
+06/08/2020 22:36:31: Error using Pisspricer API while Posting category 'Wine'. A response code of 400 was returned.
+06/08/2020 22:36:31: Error using Pisspricer API while Posting category 'Wine'. A response code of 400 was returned.
+06/08/2020 22:36:31: Error using Pisspricer API while Posting category 'Low & no alcohol'. A response code of 400 was returned.
+06/08/2020 22:41:25: 'NoneType' object has no attribute 'lower'
+06/08/2020 22:41:25: 'NoneType' object has no attribute 'lower'
+06/08/2020 22:41:25: 'wine'
+06/08/2020 22:41:25: 'wine'
+06/08/2020 22:41:25: 'wine'
+06/08/2020 22:41:25: 'wine'
+06/08/2020 22:41:25: 'NoneType' object has no attribute 'lower'
+06/08/2020 22:42:06: 'NoneType' object has no attribute 'lower'
+06/08/2020 22:42:06: 'NoneType' object has no attribute 'lower'
+06/08/2020 22:42:06: 'wine'
+06/08/2020 22:42:06: 'wine'
+06/08/2020 22:42:06: 'wine'
+06/08/2020 22:42:06: 'wine'
+06/08/2020 22:42:06: 'NoneType' object has no attribute 'lower'
+06/08/2020 22:44:42: 'wine'
+06/08/2020 22:44:42: 'wine'
+06/08/2020 22:44:42: 'wine'
+06/08/2020 22:44:42: 'wine'
+06/08/2020 22:44:49: 'wine'
+06/08/2020 22:44:49: 'wine'
+06/08/2020 22:44:49: 'wine'
+06/08/2020 22:44:49: 'wine'
+06/08/2020 22:45:59: 'wine'
+06/08/2020 22:45:59: 'wine'
+06/08/2020 22:45:59: 'wine'
+06/08/2020 22:45:59: 'wine'
+06/08/2020 22:46:11: 'wine'
+06/08/2020 22:46:11: 'wine'
+06/08/2020 22:46:11: 'wine'
+06/08/2020 22:46:11: 'wine'
