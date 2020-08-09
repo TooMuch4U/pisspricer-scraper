@@ -4,6 +4,7 @@ import time
 import requests
 import tools
 from custom_exceptions import *
+import custom_requests as custom_reqs
 
 
 class Countdown(generic_store.Store):
@@ -182,15 +183,53 @@ class Countdown(generic_store.Store):
 
         # Get a list of new items
         new_items = self._get_new_items(cd_items_dict, barcodes, categories)
-        print(f"Items length: {len(new_items)}")
 
         # Async post all new items
-        new_items_list = tools.async_post_list(new_items,
-                                                   api.url + "/items",
-                                                   api.headers)
+        if len(new_items) != 0:
+            self.print_progress(0, len(new_items), "upload new items")
+            new_items_skus = tools.async_post_items(new_items,
+                                                    api.url + "/items",
+                                                    headers=api.headers,
+                                                    printer=(self.print_progress, len(new_items), "upload new items"))
+
+        # Get a set of barcodes from pisspricer
+        barcodes_res = requests.get(api.url + "/barcodes",
+                                    headers=api.headers)
+        tools.check_pisspricer_res(barcodes_res, task)
+        barcodes = barcodes_res.json()
+
+        # Upload images for new items
+        new_images = self._get_new_images(new_items, barcodes)
+        if len(new_images) != 0:
+            self.print_progress(0, len(new_images), "upload item images")
+            responses = custom_reqs.post_images(new_images,
+                                                f"{api.url}/items",
+                                                headers=api.headers,
+                                                printer=(self.print_progress, len(new_images), "upload item images"))
+
+
+
         # TODO Implement inserting price data
 
-    def _get_new_items(self, cd_items, barcodes, cur_cats):
+    @staticmethod
+    def _get_new_images(new_items, barcodes):
+        """
+        Returns a list of new images
+        :param new_items: List of dict items that are new
+        :param barcodes: Dictionary of barcodes from pisspricer api
+        :return: List of (sku, image)
+        """
+        new_images_url = []
+        for item in new_items:
+            barcode = item["barcode"]
+            if barcode in barcodes:
+                sku = barcodes[barcode][0]
+                new_images_url.append((sku, item["image_url"]))
+        new_images = custom_reqs.async_get_images(new_images_url)
+        return new_images
+
+    @staticmethod
+    def _get_new_items(cd_items, barcodes, cur_cats):
         """
         Take a dictionary of countdown items and return a list of items that aren't in the database.
         Categorys that aren't in database get added as it goes
@@ -245,7 +284,8 @@ class Countdown(generic_store.Store):
                                 "name": item["name"] + (" " + volume if volume is not None else ""),
                                 "brand": item["brand"],
                                 "barcode": item["barcode"],
-                                "categoryId": cat_id
+                                "categoryId": cat_id,
+                                "image_url": item["images"]["big"],
                             }
                             if subcat_id is not None:
                                 new_item["subcategoryId"] = subcat_id

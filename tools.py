@@ -2,10 +2,9 @@ import os
 import requests
 from custom_exceptions import *
 from datetime import datetime
-import aiohttp
-import asyncio
 import math
 import api
+from custom_requests import async_get_list, async_post_items
 
 
 # Print iterations progress
@@ -63,114 +62,6 @@ def log_error(error):
     f = open(file_name, "a")
     f.write(f"{dt_string}: {str(error)}\n")
     f.close()
-
-
-async def async_get(session, url, headers={}, cookies={}):
-    """Execute an http call async
-    Args:
-        session: context for making the http call
-        url: URL to call
-        headers: optional headers
-        cookies: option cookies
-    Return:
-        responses: A dict like object containing http response
-    """
-    url_string = url["url"]
-    carry = url.get("carry", None)
-    async with session.get(url_string, headers=headers, cookies=cookies) as response:
-        resp = await response.json()
-        resp["carry"] = carry
-        return resp
-
-
-async def create_async_get_list(urls, header, cookie):
-    """ Gather many HTTP call made async
-    Args:
-        urls: a list of string
-        header: header to use in all requests
-        cookie: cookie to use in all requests
-    Return:
-        responses: A list of dict like object containing http response
-    """
-    async with aiohttp.ClientSession() as session:
-        tasks = []
-        for url in urls:
-            tasks.append(
-                async_get(
-                    session,
-                    url,
-                    headers=header,
-                    cookies=cookie
-                )
-            )
-        responses = await asyncio.gather(*tasks, return_exceptions=False)
-        return responses
-
-
-def async_get_list(urls, headers={}, cookies={}):
-    """
-    Async get a list of urls
-
-    :param urls: List of dicts {"url": url, "carry}
-    :param headers: Header to be used for each request
-    :param cookies: Cookie to be used for each request
-    :return: List of responses
-    """
-    responses = asyncio.run(create_async_get_list(urls, headers, cookies))
-    return responses
-
-
-async def async_post(session, url, payload, headers={}, cookies={}):
-    """Execute an http call async
-    Args:
-        session: context for making the http call
-        url: URL to call
-        headers: optional headers
-        cookies: option cookies
-    Return:
-        responses: A dict like object containing http response
-    """
-    async with session.post(url, headers=headers, cookies=cookies, json=payload) as response:
-        resp = await response.json()
-        return resp
-
-
-async def create_async_post_list(payloads, url, header, cookie):
-    """ Gather many HTTP call made async
-    Args:
-        urls: a list of string
-        header: header to use in all requests
-        cookie: cookie to use in all requests
-    Return:
-        responses: A list of dict like object containing http response
-    """
-    async with aiohttp.ClientSession() as session:
-        tasks = []
-        for payload in payloads:
-            tasks.append(
-                async_post(
-                    session,
-                    url,
-                    payload,
-                    headers=header,
-                    cookies=cookie
-                )
-            )
-        responses = await asyncio.gather(*tasks, return_exceptions=False)
-        return responses
-
-
-def async_post_list(payloads, url, headers={}, cookies={}):
-    """
-    Async get a list of urls
-
-    :param urls: List of dicts {"url": url, "payload": {}}
-    :param headers: Header to be used for each request
-    :param cookies: Cookie to be used for each request
-    :return: List of responses
-    """
-    responses = asyncio.run(create_async_post_list(payloads, url, headers, cookies))
-    return responses
 
 
 def generate_url_pages(url1, total, per_page, start_page=1, offset=0, url_end="", carry=None):
