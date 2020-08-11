@@ -354,7 +354,7 @@ def load_url(url, payload, timeout, headers={}, cookies={}):
 
 def test_put_json(reqs, printer):
     out = []
-    CONNECTIONS = 150
+    CONNECTIONS = 200
     TIMEOUT = 5
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=CONNECTIONS) as executor:
