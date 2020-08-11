@@ -2,6 +2,7 @@ import aiohttp
 import asyncio
 import aiofiles
 import tools
+import copy
 
 
 async def async_get(session, url, headers={}, cookies={}):
@@ -252,9 +253,131 @@ def post_images(images, base_url, headers={}, printer=None):
     :return: List of responses
     """
     reqs = []
+    new_headers = copy.deepcopy(headers)
+    new_headers["Content-Type"] = "image/jpeg"
     for id, image in images:
         url = f"{base_url}/{id}/image"
-        headers["Content-Type"] = "image/jpeg"
-        reqs.append((image, url, headers))
+        reqs.append((image, url, new_headers))
     responses = asyncio.run(create_async_post_images(reqs, printer))
     return responses
+
+
+""" -----------
+POSTING PRICES
+---------------"""
+
+
+async def async_put_json(session, url, payload, headers={}, cookies={}, printer=None, iteration=None):
+    """
+    Execute http post request
+    :param session: Session for requests
+    :param url: Url for http requests
+    :param image: Image data
+    :param headers: HTTP Header for request
+    :param cookies: HTTP cookies for request
+    :param printer: (print_function, total, title) for printing
+    :param iteration: [int] list with int for counting print number
+    :return: None
+    """
+    async with session.put(url, headers=headers, cookies=cookies, json=payload) as response:
+        if printer is not None:
+            print_function, total, task = printer
+            iteration[0] += 1
+            print_function(iteration[0], total, task)
+        if response.status != 201 and response.status != 200:
+            tools.log_error(Exception("Error while putting json: " + str(response)))
+        return response
+
+
+async def create_async_put_json(reqs, printer):
+    """
+    Gather http async calls
+    :param reqs: List of (payload, url, header, cookie) tuples for requests
+    :param printer: (print_function, total, title) for printing
+    :return: List of response items
+    """
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        iteration = [0]
+        for payload, url, headers, cookies in reqs:
+            tasks.append(
+                async_put_json(
+                    session,
+                    url,
+                    payload,
+                    headers=headers,
+                    cookies=cookies,
+                    iteration=iteration,
+                    printer=printer
+                )
+            )
+        responses = await asyncio.gather(*tasks, return_exceptions=False)
+        return responses
+
+
+def put_prices(prices, base_url, headers={}, printer=None):
+    """
+    Puts price data to "{base_url}/items/{sku}/stores/{store_id}"
+    :param prices: List of (sku, store_id, price_data) tuples
+    :param base_url: Base url for posting
+    :param headers: Dictionary of headers
+    :param printer: (print_function, total, title)
+    :return: List of responses
+    """
+    print("Starting upload price data...")
+    reqs = []
+    for sku, store_id, price_data in prices:
+        url = f"{base_url}/items/{sku}/stores/{store_id}"
+        reqs.append((price_data, url, headers, {}))
+    # Print initial print if possible
+    if printer is not None:
+        print_function, total, task = printer
+        print_function(0, len(prices), task)
+
+    # responses = asyncio.run(create_async_put_json(reqs, printer))
+    test_put_json(reqs, printer)
+    return []
+
+
+
+
+import pandas as pd
+import concurrent.futures
+import requests
+import time
+
+
+def load_url(url, payload, timeout, headers={}, cookies={}):
+    ans = requests.put(url, headers=headers, cookies=cookies, json=payload, timeout=timeout)
+    return ans.status_code
+
+
+def test_put_json(reqs, printer):
+    out = []
+    CONNECTIONS = 150
+    TIMEOUT = 5
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=CONNECTIONS) as executor:
+        future_to_url = (executor.submit(load_url, url, payload, TIMEOUT, headers, cookies)
+                         for payload, url, headers, cookies in reqs)
+        time1 = time.time()
+        for future in concurrent.futures.as_completed(future_to_url):
+            try:
+                data = future.result()
+            except Exception as exc:
+                data = str(type(exc))
+            finally:
+                out.append(data)
+
+                if printer is not None:
+                    print_function, total, task = printer
+                    print_function(len(out), total, task)
+                else:
+                    print(f"{str(len(out))}/{len(reqs)}", end="\r")
+                    #print('{:.1f}%'.format(100 * len(out)/len(reqs)), end="\r")
+
+        time2 = time.time()
+
+    print(f'Took {time2-time1:.2f} s')
+    print(pd.Series(out).value_counts())
+

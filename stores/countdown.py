@@ -207,9 +207,53 @@ class Countdown(generic_store.Store):
                                                 headers=api.headers,
                                                 printer=(self.print_progress, len(new_images), "upload item images"))
 
+        # Put price data into pisspricer api
+        prices_list = self._create_price_list(stores, cd_items_dict, barcodes)
+        price_data_res = custom_reqs.put_prices(prices_list,
+                                                api.url,
+                                                headers=api.headers,
+                                                printer=None
+                                                # (self.print_progress, len(prices_list), "upload price data")
+                                                )
 
+    @staticmethod
+    def _create_price_list(stores, cd_items_dict, barcodes):
+        """
+        Iterate through countdown items and create price data
+        :param stores: List of countdown stores from pisspricer api
+        :param cd_items_dict: Dictionary of countdown stores and items
+        :param barcodes: Dictionary of barcodes from pisspricer api
+        :return: List of (sku, store_id, payload) tuples
+        """
 
-        # TODO Implement inserting price data
+        # Create a dict of {"cd_id": "store_id"}
+        store_dict = {}
+        for store in stores:
+            cd_id = store["internalId"]
+            store_dict[cd_id] = store["storeId"]
+
+        # Create a list of price data tuples
+        price_data = []
+        for cd_id, cats in cd_items_dict.items():
+            for cat_obj in cats:
+                items = cat_obj["items"]
+                for item in items:
+                    # Create payload
+                    price_item = {
+                        "price": item["price"]["originalPrice"],
+                        "internalSku": item["sku"],
+                    }
+                    if item["price"]["isSpecial"]:
+                        price_item["salePrice"] = item["price"]["salePrice"]
+
+                    # Get storeId and sku
+                    store_id = store_dict[cd_id]
+                    sku = barcodes[item["barcode"]][0]
+
+                    # Add data to list
+                    price_data.append((sku, store_id, price_item,))
+
+        return price_data
 
     @staticmethod
     def _get_new_images(new_items, barcodes):
@@ -370,7 +414,7 @@ class Countdown(generic_store.Store):
             finally:
                 count += 1
                 self.print_progress(count, len(stores), task)
-            break # TODO Remove to do all stores
+            # TODO Remove to do all stores
 
         return items_dict
 
