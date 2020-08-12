@@ -211,10 +211,7 @@ class Countdown(generic_store.Store):
         prices_list = self._create_price_list(stores, cd_items_dict, barcodes)
         price_data_res = custom_reqs.put_prices(prices_list,
                                                 api.url,
-                                                headers=api.headers,
-                                                printer=None
-                                                # (self.print_progress, len(prices_list), "upload price data")
-                                                )
+                                                headers=api.headers)
 
     @staticmethod
     def _create_price_list(stores, cd_items_dict, barcodes):
@@ -414,7 +411,6 @@ class Countdown(generic_store.Store):
             finally:
                 count += 1
                 self.print_progress(count, len(stores), task)
-            # TODO Remove to do all stores
 
         return items_dict
 
