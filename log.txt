@@ -1358,3 +1358,28 @@ Error using Pisspricer API while posting to /stores {'name': 'Countdown Levin', 
 12/08/2020 14:46:43: Cannot connect to host shop.countdown.co.nz:443 ssl:default [Too many open files]
 12/08/2020 14:46:44: Cannot connect to host shop.countdown.co.nz:443 ssl:default [Too many open files]
 12/08/2020 14:46:44: Cannot connect to host shop.countdown.co.nz:443 ssl:default [Too many open files]
+17/08/2020 22:43:30: Error while posting item: <ClientResponse(http://localhost:4941/api/v1/stores) [400 The postcode field is required when lattitude is not empty.]>
+<CIMultiDictProxy('X-Powered-By': 'Express', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, X-Authorization', 'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE', 'Date': 'Mon, 17 Aug 2020 10:43:30 GMT', 'Connection': 'keep-alive', 'Content-Length': '0')>
+
+17/08/2020 23:03:46: Error while posting item: <ClientResponse(http://localhost:4941/api/v1/stores) [400 The postcode field is required when lattitude is not empty.]>
+<CIMultiDictProxy('X-Powered-By': 'Express', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, X-Authorization', 'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE', 'Date': 'Mon, 17 Aug 2020 11:03:46 GMT', 'Connection': 'keep-alive', 'Content-Length': '0')>
+
+17/08/2020 23:10:03: Error while posting item: <ClientResponse(http://localhost:4941/api/v1/stores) [400 The postcode field is required when lattitude is not empty.]>
+<CIMultiDictProxy('X-Powered-By': 'Express', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, X-Authorization', 'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE', 'Date': 'Mon, 17 Aug 2020 11:10:03 GMT', 'Connection': 'keep-alive', 'Content-Length': '0')>
+
+17/08/2020 23:11:49: Error while posting item: <ClientResponse(http://localhost:4941/api/v1/stores) [400 The postcode field is required when lattitude is not empty.]>
+<CIMultiDictProxy('X-Powered-By': 'Express', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, X-Authorization', 'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE', 'Date': 'Mon, 17 Aug 2020 11:11:49 GMT', 'Connection': 'keep-alive', 'Content-Length': '0')>
+
+17/08/2020 23:23:41: Error while posting item: <ClientResponse(http://localhost:4941/api/v1/stores) [400 The postcode field is required when lattitude is not empty.]>
+<CIMultiDictProxy('X-Powered-By': 'Express', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, X-Authorization', 'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE', 'Date': 'Mon, 17 Aug 2020 11:23:41 GMT', 'Connection': 'keep-alive', 'Content-Length': '0')>
+
+17/08/2020 23:24:45: Error while posting item: <ClientResponse(http://localhost:4941/api/v1/stores) [400 The postcode field is required when lattitude is not empty.]>
+<CIMultiDictProxy('X-Powered-By': 'Express', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, X-Authorization', 'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE', 'Date': 'Mon, 17 Aug 2020 11:24:45 GMT', 'Connection': 'keep-alive', 'Content-Length': '0')>
+
+18/08/2020 13:32:36: Error while 'post stores' for 'pisspricer'. Status: 400, Url http://localhost:4941/api/v1/stores
+18/08/2020 13:34:12: Error while 'post stores' for 'pisspricer'. Status: 400, Url http://localhost:4941/api/v1/stores
+18/08/2020 13:35:12: Error while 'post stores' for 'pisspricer'. Status: 400, Url http://localhost:4941/api/v1/stores
+18/08/2020 20:19:34: Error while 'post stores' for 'pisspricer'. Status: 400, Url http://localhost:4941/api/v1/stores, Headers: <aiohttp.streams.EmptyStreamReader object at 0x7f8c68f89fa0>
+18/08/2020 20:39:08: Error while 'post stores' for 'pisspricer'. Status: 400, Url http://localhost:4941/api/v1/stores, Content: <aiohttp.streams.EmptyStreamReader object at 0x7fc5a3092fa0>
+18/08/2020 20:42:37: Error while 'post stores' for 'pisspricer'. Status: 400, Url http://localhost:4941/api/v1/stores, Content: RequestInfo(url=URL('http://localhost:4941/api/v1/stores'), method='POST', headers=<CIMultiDictProxy('Host': 'localhost:4941', 'X-Authorization': 'Dd8gPLE4YpH3wqDD4lUTgCYWI6yBcapX', 'Accept': '*/*', 'Accept-Encoding': 'gzip, deflate', 'User-Agent': 'Python/3.8 aiohttp/3.6.2', 'Content-Length': '237', 'Content-Type': 'application/json')>, real_url=URL('http://localhost:4941/api/v1/stores'))
+18/08/2020 20:51:47: Error while 'post stores' for 'pisspricer'. Status: 400, Url http://localhost:4941/api/v1/stores, Content: {'name': 'Plateau Group Ltd (Closed)', 'url': 'https://www.shop.liquorland.co.nz', 'brandId': 6, 'regionId': 83, 'lattitude': -37.7890804, 'longitude': 175.2596865, 'postcode': '', 'address': 'Hamilton, New Zealand', 'internalId': '326'}

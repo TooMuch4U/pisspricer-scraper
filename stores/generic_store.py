@@ -9,6 +9,10 @@ class Store(ABC):
     def update_all_items(self):
         pass
 
+    @abstractmethod
+    def update_locations(self):
+        pass
+
     @staticmethod
     def print_progress(iteration, total, title=""):
         """

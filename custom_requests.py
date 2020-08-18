@@ -2,6 +2,8 @@ import aiohttp
 import asyncio
 import time
 import pandas as pd
+import requests
+
 import tools
 import copy
 
@@ -344,6 +346,68 @@ def put_prices(prices, base_url, headers={}):
     print(pd.Series(responses).value_counts())
 
 
+def get(url, cookies={}, headers={}, params={}):
+    """
+    Simple http get request using aiohttp
+    :param params: Dict of query parameters
+    :param url: Url string from http request
+    :param cookies: Dict of cookies
+    :param headers: Dict of headers
+    :return: Aiohttp response object
+    """
+
+    async def async_get(u, c, h, p):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(u, cookies=c, headers=h, params=p) as resp:
+                heads, json, body = await Response.build_params(resp)
+                return resp, heads, json, body
+
+    resp, heads1, json1, body1 = asyncio.run(async_get(url, cookies, headers, params))
+    return Response(resp, None, heads1, json1, body1)
 
 
+def post(url, payload, cookies={}, headers={}, params={}):
+    """
+    Simple http post request for json data using aiohttp
+    :param url: Url string for http request
+    :param payload: Json dict object to post
+    :param cookies: Dict of cookies
+    :param headers: Dict of headers
+    :param params: Dict of params
+    :return: Aiohttp response object
+    """
+
+    async def async_post(url2, payload2, cookies2, headers2, params2):
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url2, json=payload2, cookies=cookies2, headers=headers2, params=params2) as resp:
+                heads1, json1, body1 = await Response.build_params(resp)
+                return resp, heads1, json1, body1
+
+    resp, heads, json, body = asyncio.run(async_post(url, payload, cookies, headers, params))
+    return Response(resp, payload, heads, json, body)
+
+
+class Response:
+
+    def __init__(self, aio_res, payload, headers, json, text):
+        self.res = aio_res
+        self.status = aio_res.status
+        self.url = aio_res.url
+        self.headers = headers
+        self._text = text
+        self._json = json
+        self.content = payload
+
+    def json(self):
+        return self._json
+
+    @staticmethod
+    async def build_params(res):
+        headers = res.headers
+        json = None
+        body = None
+        if 200 <= res.status <= 299:
+            json = await res.json()
+            body = await res.text()
+        return headers, json, body
 

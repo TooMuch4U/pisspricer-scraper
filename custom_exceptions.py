@@ -29,3 +29,19 @@ class GoogleApiException(ApiException):
     def __init__(self, res, task):
         super().__init__(res, task, self.NAME)
 
+
+class AiohttpException(Exception):
+
+    def __init__(self, res, task, name):
+        message = f"Error while '{task}' for '{name}'. Status: {res.status}, Url {res.url}, Content: {res.content}"
+        super().__init__(message)
+
+
+class LiquorlandException(AiohttpException):
+
+    NAME = "Liquorland"
+
+    def __init__(self, res, task):
+        self.res = res
+        super().__init__(res, task, self.NAME)
+
