@@ -401,6 +401,9 @@ class Response:
     def json(self):
         return self._json
 
+    def text(self):
+        return self._text
+
     @staticmethod
     async def build_params(res):
         headers = res.headers

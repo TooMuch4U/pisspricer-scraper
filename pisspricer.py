@@ -182,5 +182,16 @@ class Pisspricer:
 
         return regions
 
+    def get_stores(self, brand_id=None):
+        """
+        Get json stores from pisspricer api
+        :param brand_id: Optional brand id filter
+        :return: List of json objects
+        """
+        params = {}
+        if brand_id is not None:
+            params = {"brandId": brand_id}
+        res = req.get(self.api.url + "/stores", headers=self.api.headers, params=params)
+        return res.json()
 
 

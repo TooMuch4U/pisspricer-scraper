@@ -6,14 +6,17 @@ import api
 
 class Liquorland(Store):
 
-    branch_id = 6
+    brand_id = 6
 
     def __init__(self):
         self.model = liquorland_model.LiquorlandModel(printer=self.print_progress)
         super().__init__()
 
     def update_locations(self):
-
+        """
+        Find store locations and add them to pisspricer if new
+        :return: None
+        """
         # Get locations
         locations = self.model.get_locations()
         stores = []
@@ -54,11 +57,18 @@ class Liquorland(Store):
         # Post Stores
         pisspricer_con = Pisspricer(api)
         pisspricer_con.upload_new_stores(stores,
-                                         self.branch_id,
+                                         self.brand_id,
                                          printer=(self.print_progress, len(stores), "update locations"))
 
     def update_all_items(self):
-        pass
+
+        pisspricer = Pisspricer(api)
+
+        # Get stores from pisspricer
+        stores = pisspricer.get_stores(self.brand_id)
+
+        # Get items from liquorland model
+        items = self.model.get_items(stores)
 
 
 

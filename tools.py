@@ -144,3 +144,24 @@ def post_subcategory(cat_id, subcat):
         raise PisspricerApiException(res, f"Posting subcategory '{subcat}', for category with id {cat_id}")
 
     return res.json()["subcategoryId"]
+
+
+def get_barcode(barcode_string):
+    """
+    Finds where a barcode ends in a string and returns it
+    :param barcode_string:
+    :return: Barcode string or None
+    """
+    barcode = ""
+    for i, char in enumerate(barcode_string):
+        if not char.isnumeric():
+            break
+        barcode += char
+
+    if i < 11:
+        barcode = None
+
+    return barcode
+
+
+
