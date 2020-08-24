@@ -1384,3 +1384,12 @@ Error using Pisspricer API while posting to /stores {'name': 'Countdown Levin', 
 18/08/2020 20:42:37: Error while 'post stores' for 'pisspricer'. Status: 400, Url http://localhost:4941/api/v1/stores, Content: RequestInfo(url=URL('http://localhost:4941/api/v1/stores'), method='POST', headers=<CIMultiDictProxy('Host': 'localhost:4941', 'X-Authorization': 'Dd8gPLE4YpH3wqDD4lUTgCYWI6yBcapX', 'Accept': '*/*', 'Accept-Encoding': 'gzip, deflate', 'User-Agent': 'Python/3.8 aiohttp/3.6.2', 'Content-Length': '237', 'Content-Type': 'application/json')>, real_url=URL('http://localhost:4941/api/v1/stores'))
 18/08/2020 20:51:47: Error while 'post stores' for 'pisspricer'. Status: 400, Url http://localhost:4941/api/v1/stores, Content: {'name': 'Plateau Group Ltd (Closed)', 'url': 'https://www.shop.liquorland.co.nz', 'brandId': 6, 'regionId': 83, 'lattitude': -37.7890804, 'longitude': 175.2596865, 'postcode': '', 'address': 'Hamilton, New Zealand', 'internalId': '326'}
 19/08/2020 19:44:10: Error while 'post stores' for 'pisspricer'. Status: 400, Url http://localhost:4941/api/v1/stores, Content: {'name': 'Plateau Group Ltd (Closed)', 'url': 'https://www.shop.liquorland.co.nz', 'brandId': 6, 'regionId': 83, 'lattitude': -37.7890804, 'longitude': 175.2596865, 'postcode': '', 'address': 'Hamilton, New Zealand', 'internalId': '326'}
+24/08/2020 21:08:44: cannot unpack non-iterable function object
+24/08/2020 21:08:44: cannot unpack non-iterable function object
+24/08/2020 21:08:44: cannot unpack non-iterable function object
+24/08/2020 21:08:44: cannot unpack non-iterable function object
+24/08/2020 21:08:44: cannot unpack non-iterable function object
+24/08/2020 21:08:44: cannot unpack non-iterable function object
+24/08/2020 21:08:44: cannot unpack non-iterable function object
+24/08/2020 21:08:44: cannot unpack non-iterable function object
+24/08/2020 21:08:44: cannot unpack non-iterable function object

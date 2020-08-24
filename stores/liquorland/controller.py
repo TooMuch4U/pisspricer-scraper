@@ -70,5 +70,8 @@ class Liquorland(Store):
         # Get items from liquorland model
         items = self.model.get_items(stores)
 
+        # Create new products with pisspricer api
+        pisspricer.update_item_prices(items, self.brand_id, "liquorland", self.print_progress)
+
 
 

@@ -389,7 +389,7 @@ def post(url, payload, cookies={}, headers={}, params={}):
 
 class Response:
 
-    def __init__(self, aio_res, payload, headers, json, text):
+    def __init__(self, aio_res, payload, headers, json, text, read=None):
         self.res = aio_res
         self.status = aio_res.status
         self.url = aio_res.url
@@ -397,12 +397,16 @@ class Response:
         self._text = text
         self._json = json
         self.content = payload
+        self._read = read
 
     def json(self):
         return self._json
 
     def text(self):
         return self._text
+
+    def read(self):
+        return self._read
 
     @staticmethod
     async def build_params(res):

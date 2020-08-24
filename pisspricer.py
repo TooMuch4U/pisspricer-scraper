@@ -107,7 +107,7 @@ class Pisspricer:
                 tools.log_error(custom_exceptions.AiohttpException(res, "post stores", "pisspricer"))
 
     @staticmethod
-    async def _async_post_json(session, url, payload, headers={}, cookies={}, printer=None, iteration=None):
+    async def _async_post_json(session, url, payload, headers={}, cookies={}, params={}, printer=None, iteration=None):
         """
         Execute http put requests using an aiohttp session.
         :param session: Aiohttp session
@@ -119,13 +119,54 @@ class Pisspricer:
         :param iteration: List with single integer for counting current iteration
         :return: Custom response object
         """
-        async with session.post(url, headers=headers, cookies=cookies, json=payload) as response:
+        async with session.post(url, headers=headers, cookies=cookies, json=payload, params=params) as response:
             if printer is not None and iteration is not None:
                 iteration[0] += 1
                 print_func, total, task = printer
                 print_func(iteration[0], total, task)
             heads1, json1, body1 = await req.Response.build_params(response)
             return req.Response(response, payload, heads1, json1, body1)
+
+    @staticmethod
+    async def _async_put_json(session, url, payload, headers={}, cookies={}, params={}, printer=None, iteration=None):
+        """
+        Execute http put requests using an aiohttp session.
+        :param session: Aiohttp session
+        :param url: Url for http request
+        :param payload: Json data for request
+        :param headers: Headers for http request
+        :param cookies: Cookies for http request
+        :param printer: (print_func, total, task) for printing
+        :param iteration: List with single integer for counting current iteration
+        :return: Custom response object
+        """
+        async with session.put(url, headers=headers, cookies=cookies, json=payload, params=params) as response:
+            if printer is not None and iteration is not None:
+                iteration[0] += 1
+                print_func, total, task = printer
+                print_func(iteration[0], total, task)
+            heads1, json1, body1 = None, None, None
+            return req.Response(response, payload, heads1, json1, body1)
+
+    @staticmethod
+    async def _async_get(session, url, item, headers={}, cookies={}, params={}, printer=None, iteration=None):
+        """
+        Execute http get requests using an aiohttp session.
+        :param session: Aiohttp session
+        :param url: Url for http request
+        :param headers: Headers for http request
+        :param cookies: Cookies for http request
+        :param printer: (print_func, total, task) for printing
+        :param iteration: List with single integer for counting current iteration
+        :return: Custom response object
+        """
+        async with session.get(url, headers=headers, cookies=cookies, params=params) as response:
+            if printer is not None and iteration is not None:
+                iteration[0] += 1
+                print_func, total, task = printer
+                print_func(iteration[0], total, task)
+            image = await response.read()
+            return item, req.Response(response, None, None, None, None, read=image)
 
     def _get_region_id(self, regions, region_name, lat=None, lng=None):
         """
@@ -193,5 +234,140 @@ class Pisspricer:
             params = {"brandId": brand_id}
         res = req.get(self.api.url + "/stores", headers=self.api.headers, params=params)
         return res.json()
+
+    def update_item_prices(self, items, brand_id, brand_name, print_func=None):
+        """
+        Posts items to pisspricer api that are new
+        :param items: List of dict items
+            {
+                "name"
+                "categoryId"
+                "subcategoryId"
+                "internalId"
+                "barcode"
+            }
+        :param brand_id: Store brand id
+        :param print_func: Function for printing
+        :return: None
+        """
+        barcodes = req.get(self.api.url + "/barcodes", headers=self.api.headers)
+        skus = req.get(self.api.url + "/internalids", headers=self.api.headers, params={"brandId": brand_id})
+        barcodes = barcodes.json()
+        skus = skus.json()
+
+        requests = []
+        for item in items:
+            if item.get("barcode", None) is not None:
+                barcode = item["barcode"]
+                if barcode not in barcodes:
+                    # Add item to requests list
+                    requests.append([self.api.url + "/items",
+                                     item])
+                    barcodes[barcode] = []
+            elif item.get("internalSku", None) is None or item.get("internalSku", None) not in skus:
+                requests.append([self.api.url + "/items",
+                                 item])
+                skus[item["internalSku"]] = []
+
+        # Post all items
+        iteration = [0]
+        if print_func is not None and len(requests) > 0:
+            print_func(0, len(requests), "create new products")
+        responses = asyncio.run(req.create_async_tasks(requests,
+                                           {"headers": self.api.headers,
+                                            "printer": (print_func, len(requests), "create new products"),
+                                            "iteration": iteration},
+                                           self._async_post_json))
+
+        # Add new items to dictionaries
+        for res in responses:
+            if res.status == 200 or res.status == 201:
+                data = res.json()
+                new_sku = data["sku"]
+                item = res.content
+                barcode = item.get("barcode", None)
+                if barcode is not None:
+                    barcodes[barcode] = [new_sku]
+                else:
+                    skus[item["internalSku"]] = [new_sku]
+
+        # Create request list for prices
+        requests = []
+        for item in items:
+
+            if item.get("barcode") is not None:
+                sku = barcodes[item["barcode"]][0]
+            else:
+                sku = skus[item["internalSku"]][0]
+            item["sku"] = sku
+            requests.append([f"{self.api.url}/items/{sku}/stores/{item['storeId']}",
+                             item])
+
+        # Upload images
+        self.upload_new_images(items, print_func)
+
+        # Put prices
+        iteration = [0]
+        if print_func is not None:
+            print_func(0, len(requests), "post new prices")
+        reses = asyncio.run(req.create_async_tasks(requests,
+                                           {"headers": self.api.headers,
+                                            "printer": (print_func, len(requests), "post new prices"),
+                                            "iteration": iteration}, self._async_put_json))
+        return reses
+
+    def upload_new_images(self, items, print_func):
+        """
+        Uploads images for items that don't have one
+        :param items: List of item dict objects. {"sku": int, "image_url": string}
+        :return: None
+        """
+        all_items = req.get(self.api.url + "/allitems", headers=self.api.headers).json()
+
+        # Iterate through items and add to get list if there isn't an image
+        req_list = []
+        checked_skus = set()
+        for item in items:
+            if item["sku"] not in checked_skus:
+
+                has_image = True
+                for cur_item in all_items:
+                    if cur_item["sku"] == item["sku"]:
+                        if cur_item["hasImage"] == 0:
+                            has_image = False
+                        break
+                if not has_image:
+
+                    # Item doesn't have image
+                    req_list.append([
+                        item["image_url"],
+                        item
+                    ])
+
+                # Add sku to set
+                checked_skus.add(item["sku"])
+
+        # Get images
+        iteration = [0]
+        if len(req_list) > 0:
+            print_func(0, len(req_list), "get images")
+        responses = asyncio.run(req.create_async_tasks(req_list,
+                                                       {"headers": self.api.headers,
+                                                        "printer": (print_func, len(req_list), "get images"),
+                                                        "iteration": iteration},
+                                                       self._async_get))
+
+        # Create put image request list
+        image_list = []
+        for item, res in responses:
+            image_list.append((item["sku"], res.read()))
+
+        if len(image_list) > 0:
+            print_func(0, len(image_list), "put images")
+        responses = req.post_images(image_list,
+                                    self.api.url + "/items",
+                                    headers=self.api.headers,
+                                    printer=(print_func, len(image_list), "put images"))
+
 
 

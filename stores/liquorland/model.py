@@ -205,7 +205,7 @@ class LiquorlandModel:
             "price": price,
             "salePrice": sale_price,
             "stock": stock,
-            "volume": volume,
+            "volumeTotal": volume,
             "url": url,
             "internalSku": sku,
             "storeId": item["storeId"],
@@ -261,7 +261,7 @@ class LiquorlandModel:
         # Image
         image_div = item_div.find("div", {"class": "thumbnail"})
         image = image_div.find("img")
-        image_url = image["src"]
+        image_url = f"{self.base_url}/{image['src']}"
         if image_url == "App_Themes/Liquorland/Images/no-thumbnail-available.png":
             image_url = None
             barcode = None
