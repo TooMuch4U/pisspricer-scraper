@@ -16,20 +16,26 @@ def is_white(r, b, g, tolerance):
     return (255 * 3 - tolerance) < (r + b + g) <= (255 * 3)
 
 
-def cut():
-    res = requests.get('https://storage.googleapis.com/pisspricer-bucket-dev/items/18496.jpeg')
-    filePath = '~/Desktop/image4.png'
+def process_response_content(content):
+    """
+    Processes a response content
+    :param content: Content from a response
+    :return: Image content
+    """
+    image = Image.open(BytesIO(content))
+    return process_image(image)
 
-    # Get image
-    image = Image.open(BytesIO(res.content))
-    width, height = image.size
-    img = image.convert("RGBA")
-    datas = list(img.getdata())
 
-    print(width, height)
-
-    newData = []
-    tolerance = 40 # TODO fine tune tolerance
+def remove_background(pixel_list, width, height, tolerance=100):
+    """
+    Iterates through each row, setting pixels left and right of the image that are white to transperant
+    :param height: Height of image
+    :param width: Width of image
+    :param tolerance: Tolerance for checking if a pixel is white
+    :param pixel_list: List of (R, B, G, A) pixels
+    :return: 2-tuple (box, new_pixel_list)
+    """
+    new_rows = []
 
     left = []
     right = []
@@ -39,9 +45,9 @@ def cut():
     is_above = True
     is_in = False
 
-    # Iterates through each row, setting pixels left and right of the image that are white to transperant
+    # Iterate through rows
     for h in range(0, height):
-        row = datas[(width * h):(width * (h+1))]
+        row = pixel_list[(width * h):(width * (h + 1))]
         new_row = copy.deepcopy(row)
 
         # Left -> Right
@@ -53,6 +59,7 @@ def cut():
                 left.append(i)
                 if i == (width - 1):
                     if is_above:
+                        # Top
                         is_in = True
                         is_above = False
                         top_index = 0 if h == 0 else h - 1
@@ -71,14 +78,39 @@ def cut():
                 right.append(i)
                 break
 
-        newData.append(new_row)
+        new_rows.append(new_row)
 
-    newSData = []
-    for row in newData:
-        newSData += row
+    # Convert row list into list of pixels
+    new_pixels = []
+    for row in new_rows:
+        new_pixels += row
 
-    img.putdata(newSData)
+    # Create box
     box = (min(left), top_index, max(right), bottom_index)
+
+    return box, new_pixels
+
+
+def process_image(image):
+    """
+    Processes an item image: Removes the background, and crops to the sides of the item
+    :param image: PIL.Image object
+    :return: PIL.Image
+    """
+    # Get image details
+    width, height = image.size
+
+    # Convert to RBGA, then convert to list of pixels
+    img = image.convert("RGBA")
+    pixel_list = list(img.getdata())
+
+    # Remove image background
+    box, new_pixels = remove_background(pixel_list, width, height)
+
+    # Set data for image
+    img.putdata(new_pixels)
+
+    # Crop image
     img = img.crop(box)
 
     img.show()
@@ -86,4 +118,5 @@ def cut():
 
 
 if __name__ == '__main__':
-    cut()
+    res = requests.get('https://storage.googleapis.com/pisspricer-bucket-dev/items/18496.jpeg')
+    process_response_content(res.content)
