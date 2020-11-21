@@ -2,7 +2,6 @@ import aiohttp
 import asyncio
 import time
 import pandas as pd
-import requests
 
 import tools
 import copy
