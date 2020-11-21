@@ -29,7 +29,7 @@ def cut():
     print(width, height)
 
     newData = []
-    tolerance = 40
+    tolerance = 40 # TODO fine tune tolerance
 
     left = []
     right = []
@@ -78,6 +78,8 @@ def cut():
         newSData += row
 
     img.putdata(newSData)
+    box = (min(left), top_index, max(right), bottom_index)
+    img = img.crop(box)
 
     img.show()
     # cropped.save(filePath)
