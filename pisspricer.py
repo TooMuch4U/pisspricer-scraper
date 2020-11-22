@@ -364,18 +364,14 @@ class Pisspricer:
         for item, res in responses:
             content = res.read()
             image_bytes = images.process_response_content(content)
-
-            import PIL
-            from io import BytesIO
-            PIL.Image.open(BytesIO(image_bytes)).show()
             image_list.append((item["sku"], image_bytes))
 
         if len(image_list) > 0:
             print_func(0, len(image_list), "put images")
-        responses = req.post_images(image_list,
-                                    self.api.url + "/items",
-                                    headers=self.api.headers,
-                                    printer=(print_func, len(image_list), "put images"))
+        # responses = req.post_images(image_list,
+        #                             self.api.url + "/items",
+        #                             headers=self.api.headers,
+        #                             printer=(print_func, len(image_list), "put images"))
 
 
 
