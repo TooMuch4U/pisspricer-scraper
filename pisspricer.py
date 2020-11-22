@@ -3,6 +3,7 @@ import asyncio
 import custom_exceptions
 import custom_requests as req
 import tools
+import images
 
 
 class Pisspricer:
@@ -351,16 +352,23 @@ class Pisspricer:
         iteration = [0]
         if len(req_list) > 0:
             print_func(0, len(req_list), "get images")
-        responses = asyncio.run(req.create_async_tasks(req_list,
-                                                       {"headers": self.api.headers,
-                                                        "printer": (print_func, len(req_list), "get images"),
-                                                        "iteration": iteration},
-                                                       self._async_get))
+        responses = asyncio.run(
+            req.create_async_tasks(req_list,
+                                   {"headers": self.api.headers,
+                                    "printer": (print_func, len(req_list), "get images"),
+                                    "iteration": iteration},
+                                   self._async_get))
 
         # Create put image request list
         image_list = []
         for item, res in responses:
-            image_list.append((item["sku"], res.read()))
+            content = res.read()
+            image_bytes = images.process_response_content(content)
+
+            import PIL
+            from io import BytesIO
+            PIL.Image.open(BytesIO(image_bytes)).show()
+            image_list.append((item["sku"], image_bytes))
 
         if len(image_list) > 0:
             print_func(0, len(image_list), "put images")
@@ -368,6 +376,7 @@ class Pisspricer:
                                     self.api.url + "/items",
                                     headers=self.api.headers,
                                     printer=(print_func, len(image_list), "put images"))
+
 
 
 

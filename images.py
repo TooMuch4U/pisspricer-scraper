@@ -52,9 +52,10 @@ def remove_background(pixel_list, width, height, tolerance=100):
 
         # Left -> Right
         for i, pixel in enumerate(row):
-            r, b, g, a = pixel
+            r, b, g = pixel
             if is_white(r, b, g, tolerance):
-                new_row[i] = (255, 255, 255, 0)
+                pass
+                # new_row[i] = (255, 255, 255, 0)
             else:
                 left.append(i)
                 if i == (width - 1):
@@ -71,9 +72,10 @@ def remove_background(pixel_list, width, height, tolerance=100):
 
         # Right -> Left
         for i in range(width - 1, -1, -1):
-            r, b, g, a = row[i]
+            r, b, g = row[i]
             if is_white(r, b, g, tolerance):
-                new_row[i] = (255, 255, 255, 0)
+                # new_row[i] = (255, 255, 255, 0)
+                pass
             else:
                 right.append(i)
                 break
@@ -101,7 +103,7 @@ def process_image(image):
     width, height = image.size
 
     # Convert to RBGA, then convert to list of pixels
-    img = image.convert("RGBA")
+    img = image.convert("RGB")
     pixel_list = list(img.getdata())
 
     # Remove image background
@@ -113,10 +115,19 @@ def process_image(image):
     # Crop image
     img = img.crop(box)
 
-    img.show()
-    # cropped.save(filePath)
+    # img.show()
+
+    # Image bytes
+    img_byte_arr = BytesIO()
+    img.save(img_byte_arr, format='JPEG')
+    img_byte_arr = img_byte_arr.getvalue()
+
+    # img_byte = bytearray(img)
+    return img_byte_arr
 
 
 if __name__ == '__main__':
-    res = requests.get('https://storage.googleapis.com/pisspricer-bucket-dev/items/18496.jpeg')
-    process_response_content(res.content)
+    res = requests.get('https://static.countdown.co.nz/assets/product-images/big/9421901182038.jpg')
+    image = process_response_content(res.content)
+    print(type(image.read()))
+    pass
