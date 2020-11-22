@@ -368,10 +368,10 @@ class Pisspricer:
 
         if len(image_list) > 0:
             print_func(0, len(image_list), "put images")
-        # responses = req.post_images(image_list,
-        #                             self.api.url + "/items",
-        #                             headers=self.api.headers,
-        #                             printer=(print_func, len(image_list), "put images"))
+        responses = req.post_images(image_list,
+                                    self.api.url + "/items",
+                                    headers=self.api.headers,
+                                    printer=(print_func, len(image_list), "put images"))
 
 
 
