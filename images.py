@@ -26,7 +26,7 @@ def process_response_content(content):
     return process_image(image)
 
 
-def remove_background(pixel_list, width, height, tolerance=100):
+def remove_background_jpeg(pixel_list, width, height, tolerance=100):
     """
     Iterates through each row, setting pixels left and right of the image that are white to transperant
     :param height: Height of image
@@ -93,6 +93,72 @@ def remove_background(pixel_list, width, height, tolerance=100):
     return box, new_pixels
 
 
+def remove_background(pixel_list, width, height, tolerance=150):
+    """
+    Iterates through each row, setting pixels left and right of the image that are white to transperant
+    :param height: Height of image
+    :param width: Width of image
+    :param tolerance: Tolerance for checking if a pixel is white
+    :param pixel_list: List of (R, B, G, A) pixels
+    :return: 2-tuple (box, new_pixel_list)
+    """
+    new_rows = []
+
+    left = []
+    right = []
+    top_index = 0
+    bottom_index = height - 1
+
+    is_above = True
+    is_in = False
+
+    # Iterate through rows
+    for h in range(0, height):
+        row = pixel_list[(width * h):(width * (h + 1))]
+        new_row = copy.deepcopy(row)
+
+        # Left -> Right
+        for i, pixel in enumerate(row):
+            r, b, g, a = pixel
+            if is_white(r, b, g, tolerance):
+                new_row[i] = (255, 255, 255, 0)
+                if i == (width - 1):
+                    if is_in:
+                        # Bottom
+                        is_in = False
+                        bottom_index = (height - 1) if h == (height - 1) else h + 1
+            else:
+                left.append(i)
+
+                if is_above:
+                    # Top
+                    is_in = True
+                    is_above = False
+                    top_index = 0 if h == 0 else h - 1
+                break
+
+        # Right -> Left
+        for i in range(width - 1, -1, -1):
+            r, b, g, a = row[i]
+            if is_white(r, b, g, tolerance):
+                new_row[i] = (255, 255, 255, 0)
+            else:
+                right.append(i)
+                break
+
+        new_rows.append(new_row)
+
+    # Convert row list into list of pixels
+    new_pixels = []
+    for row in new_rows:
+        new_pixels += row
+
+    # Create box
+    box = (min(left), top_index, max(right), bottom_index)
+
+    return box, new_pixels
+
+
 def process_image(image):
     """
     Processes an item image: Removes the background, and crops to the sides of the item
@@ -103,7 +169,7 @@ def process_image(image):
     width, height = image.size
 
     # Convert to RBGA, then convert to list of pixels
-    img = image.convert("RGB")
+    img = image.convert("RGBA")
     pixel_list = list(img.getdata())
 
     # Remove image background
@@ -115,11 +181,11 @@ def process_image(image):
     # Crop image
     img = img.crop(box)
 
-    # img.show()
+    img.show()
 
     # Image bytes
     img_byte_arr = BytesIO()
-    img.save(img_byte_arr, format='JPEG')
+    img.save(img_byte_arr, format='PNG')
     img_byte_arr = img_byte_arr.getvalue()
 
     # img_byte = bytearray(img)
