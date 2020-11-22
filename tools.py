@@ -4,6 +4,7 @@ from custom_exceptions import *
 from datetime import datetime
 import math
 import api
+from custom_requests import async_get_list, async_post_items
 
 
 # Print iterations progress
