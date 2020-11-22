@@ -235,20 +235,24 @@ class Countdown(generic_store.Store):
             for cat_obj in cats:
                 items = cat_obj["items"]
                 for item in items:
-                    # Create payload
-                    price_item = {
-                        "price": item["price"]["originalPrice"],
-                        "internalSku": item["sku"],
-                    }
-                    if item["price"]["isSpecial"]:
-                        price_item["salePrice"] = item["price"]["salePrice"]
+                    try:
 
-                    # Get storeId and sku
-                    store_id = store_dict[cd_id]
-                    sku = barcodes[item["barcode"]][0]
+                        # Create payload
+                        price_item = {
+                            "price": item["price"]["originalPrice"],
+                            "internalSku": item["sku"],
+                        }
+                        if item["price"]["isSpecial"]:
+                            price_item["salePrice"] = item["price"]["salePrice"]
 
-                    # Add data to list
-                    price_data.append((sku, store_id, price_item,))
+                        # Get storeId and sku
+                        store_id = store_dict[cd_id]
+                        sku = barcodes[item["barcode"]][0]
+
+                        # Add data to list
+                        price_data.append((sku, store_id, price_item,))
+                    except Exception as err:
+                        tools.log_error(err)
 
         return price_data
 
@@ -333,8 +337,8 @@ class Countdown(generic_store.Store):
                             new_items.append(new_item)
                             new_barcodes.add(item["barcode"])
                 except Exception as err:
-                    raise err
                     tools.log_error(err)
+                    # raise err
 
         return new_items
 

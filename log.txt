@@ -1393,3 +1393,15 @@ Error using Pisspricer API while posting to /stores {'name': 'Countdown Levin', 
 24/08/2020 21:08:44: cannot unpack non-iterable function object
 24/08/2020 21:08:44: cannot unpack non-iterable function object
 24/08/2020 21:08:44: cannot unpack non-iterable function object
+22/11/2020 19:21:42: Error using Countdown API while _set_store. A response code of 422 was returned.
+22/11/2020 19:22:11: Error using Countdown API while _set_store. A response code of 422 was returned.
+22/11/2020 19:22:11: Error using Countdown API while _set_store. A response code of 422 was returned.
+22/11/2020 19:22:21: Error using Countdown API while _set_store. A response code of 422 was returned.
+22/11/2020 19:22:31: Error using Countdown API while _set_store. A response code of 422 was returned.
+22/11/2020 19:22:38: Error using Countdown API while _set_store. A response code of 422 was returned.
+22/11/2020 19:22:39: Error using Countdown API while _set_store. A response code of 422 was returned.
+22/11/2020 19:22:43: Error using Countdown API while _set_store. A response code of 422 was returned.
+22/11/2020 19:22:43: Error using Countdown API while _set_store. A response code of 422 was returned.
+22/11/2020 19:22:45: Error using Countdown API while _set_store. A response code of 422 was returned.
+22/11/2020 19:22:46: Error using Countdown API while _set_store. A response code of 422 was returned.
+22/11/2020 19:22:47: Error using Countdown API while _set_store. A response code of 422 was returned.
