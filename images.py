@@ -168,7 +168,7 @@ def process_image(image):
     # Get image details
     width, height = image.size
 
-    # Convert to RBGA, then convert to list of pixels
+    # Convert to RBG, then convert to list of pixels
     img = image.convert("RGB")
     pixel_list = list(img.getdata())
 
