@@ -5,6 +5,7 @@ import requests
 import tools
 from custom_exceptions import *
 import custom_requests as custom_reqs
+from pisspricer import Pisspricer
 
 
 class Countdown(generic_store.Store):
@@ -199,19 +200,37 @@ class Countdown(generic_store.Store):
         barcodes = barcodes_res.json()
 
         # Upload images for new items
+        pisspricer = Pisspricer(api)
+        new_images_url = []
+
+        # Iterate through items and assign image dicts
+        for cat_list in cd_items_dict.values():
+            for cat_dict in cat_list:
+                items = cat_dict['items']
+                for item in items:
+                    try:
+                        image_url = item["images"]["big"]
+                        barcode = item["barcode"]
+                        sku = barcodes[barcode][0]
+                        new_images_url.append({"sku": sku, "image_url": image_url})
+                    except Exception as err:
+                        tools.log_error(err)
+
+        pisspricer.upload_new_images(new_images_url, self.print_progress)
+
         new_images = self._get_new_images(new_items, barcodes)
-        if len(new_images) != 0:
-            self.print_progress(0, len(new_images), "upload item images")
-            responses = custom_reqs.post_images(new_images,
-                                                f"{api.url}/items",
-                                                headers=api.headers,
-                                                printer=(self.print_progress, len(new_images), "upload item images"))
+        # if len(new_images) != 0:
+        #     self.print_progress(0, len(new_images), "upload item images")
+        #     responses = custom_reqs.post_images(new_images,
+        #                                         f"{api.url}/items",
+        #                                         headers=api.headers,
+        #                                         printer=(self.print_progress, len(new_images), "upload item images"))
 
         # Put price data into pisspricer api
-        prices_list = self._create_price_list(stores, cd_items_dict, barcodes)
-        price_data_res = custom_reqs.put_prices(prices_list,
-                                                api.url,
-                                                headers=api.headers)
+        # prices_list = self._create_price_list(stores, cd_items_dict, barcodes)
+        # price_data_res = custom_reqs.put_prices(prices_list,
+        #                                         api.url,
+        #                                         headers=api.headers)
 
     @staticmethod
     def _create_price_list(stores, cd_items_dict, barcodes):
