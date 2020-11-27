@@ -324,9 +324,11 @@ class Pisspricer:
         :return: None
         """
         all_items = req.get(self.api.url + "/allitems", headers=self.api.headers).json()
+        print('start')
 
         # Iterate through items and add to get list if there isn't an image
         req_list = []
+
         checked_skus = set()
         for item in items:
             if item["sku"] not in checked_skus:
@@ -334,8 +336,8 @@ class Pisspricer:
                 has_image = True
                 for cur_item in all_items:
                     if cur_item["sku"] == item["sku"]:
-                        # if cur_item["hasImage"] == 0:
-                        #     has_image = False
+                        if cur_item["hasImage"] == 0:
+                            has_image = False
                         break
                 if not has_image:
 
@@ -361,10 +363,16 @@ class Pisspricer:
 
         # Create put image request list
         image_list = []
-        for item, res in responses:
-            content = res.read()
-            image_bytes = images.process_response_content(content)
-            image_list.append((item["sku"], image_bytes))
+        print_func(0, len(responses), 'processing images')
+        for i, (item, res) in enumerate(responses):
+            try:
+                content = res.read()
+                image_bytes = images.process_response_content(content)
+                image_list.append((item["sku"], image_bytes))
+            except Exception as err:
+                tools.log_error(err)
+            finally:
+                print_func(i + 1, len(responses))
 
         if len(image_list) > 0:
             print_func(0, len(image_list), "put images")
