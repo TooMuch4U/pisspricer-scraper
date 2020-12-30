@@ -12,7 +12,9 @@ def trim(im, border):
         return im.crop(bbox)
 
 
-def is_white(r, b, g, tolerance):
+def is_white(r, b, g, tolerance, a=None):
+    if a is not None and a == 0:
+        return True
     return (255 * 3 - tolerance) < (r + b + g) <= (255 * 3)
 
 
@@ -32,7 +34,7 @@ def remove_background_jpeg(pixel_list, width, height, tolerance=100):
     :param height: Height of image
     :param width: Width of image
     :param tolerance: Tolerance for checking if a pixel is white
-    :param pixel_list: List of (R, B, G, A) pixels
+    :param pixel_list: List of (R, B, G) pixels
     :return: 2-tuple (box, new_pixel_list)
     """
     new_rows = []
@@ -93,14 +95,14 @@ def remove_background_jpeg(pixel_list, width, height, tolerance=100):
     return box, new_pixels
 
 
-def remove_background_png(pixel_list, width, height, tolerance=40):
+def remove_background_png(pixel_list, width, height, tolerance=10):
     """
     Iterates through each row, setting pixels left and right of the image that are white to transperant
     :param height: Height of image
     :param width: Width of image
     :param tolerance: Tolerance for checking if a pixel is white
-    :param pixel_list: List of (R, B, G) pixels
-    :return: 2-tuple (box, new_pixel_list)
+    :param pixel_list: List of (R, B, G, A) pixels
+    :return: 2-tuple (box, [(R, B, G), ...])
     """
     new_rows = []
 
@@ -115,13 +117,13 @@ def remove_background_png(pixel_list, width, height, tolerance=40):
     # Iterate through rows
     for h in range(0, height):
         row = pixel_list[(width * h):(width * (h + 1))]
-        new_row = copy.deepcopy(row)
+        new_row = [(r, b, g) for r, b, g, _ in row]
 
         # Left -> Right
         for i, pixel in enumerate(row):
             r, b, g, a = pixel
-            if is_white(r, b, g, tolerance):
-                new_row[i] = (255, 255, 255, 0)
+            if is_white(r, b, g, tolerance, a=a):
+                new_row[i] = (255, 255, 255)
                 if i == (width - 1):
                     if is_in:
                         # Bottom
@@ -141,7 +143,8 @@ def remove_background_png(pixel_list, width, height, tolerance=40):
         for i in range(width - 1, -1, -1):
             r, b, g, a = row[i]
             if is_white(r, b, g, tolerance):
-                new_row[i] = (255, 255, 255, 0)
+                new_row[i] = (255, 255, 255)
+                pass
             else:
                 right.append(i)
                 break
@@ -169,11 +172,12 @@ def process_image(image):
     width, height = image.size
 
     # Convert to RBG, then convert to list of pixels
+    img_rbga = image.convert("RGBA")
     img = image.convert("RGB")
-    pixel_list = list(img.getdata())
+    pixel_list = list(img_rbga.getdata())
 
     # Remove image background
-    box, new_pixels = remove_background_jpeg(pixel_list, width, height)
+    box, new_pixels = remove_background_png(pixel_list, width, height)
 
     # Set data for image
     img.putdata(new_pixels)
@@ -181,7 +185,7 @@ def process_image(image):
     # Crop image
     img = img.crop(box)
 
-    # img.show()
+    img.show()
 
     # Image bytes
     img_byte_arr = BytesIO()
@@ -193,7 +197,7 @@ def process_image(image):
 
 
 if __name__ == '__main__':
-    res = requests.get('https://static.countdown.co.nz/assets/product-images/big/9421901182038.jpg')
+    res = requests.get('https://static.countdown.co.nz/assets/product-images/zoom/7501064191367.jpg')
     image = process_response_content(res.content)
-    print(type(image.read()))
+    # print(type(image.read()))
     pass
