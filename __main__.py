@@ -1,10 +1,11 @@
 import sys
-from stores import countdown, liquorland
+from stores import countdown, liquorland, henrys
 import api
 
 STORE_DICT = {
     "countdown": countdown.Countdown,
-    "liquorland": liquorland.controller.Liquorland
+    "liquorland": liquorland.controller.Liquorland,
+    "henrys": henrys.Henrys
 }
 
 

@@ -93,7 +93,7 @@ def remove_background_jpeg(pixel_list, width, height, tolerance=100):
     return box, new_pixels
 
 
-def remove_background_png(pixel_list, width, height, tolerance=150):
+def remove_background_png(pixel_list, width, height, tolerance=40):
     """
     Iterates through each row, setting pixels left and right of the image that are white to transperant
     :param height: Height of image

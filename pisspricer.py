@@ -246,6 +246,7 @@ class Pisspricer:
                 "subcategoryId"
                 "internalId"
                 "barcode"
+                "storeId"
             }
         :param brand_id: Store brand id
         :param print_func: Function for printing
@@ -305,7 +306,7 @@ class Pisspricer:
                              item])
 
         # Upload images
-        self.upload_new_images(items, print_func)
+        # self.upload_new_images(items, print_func)
 
         # Put prices
         iteration = [0]
