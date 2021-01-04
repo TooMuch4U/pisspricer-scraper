@@ -149,6 +149,11 @@ def remove_background_png(pixel_list, width, height, tolerance=10):
                 right.append(i)
                 break
 
+        # Check for clear pixels
+        for i, pixel in enumerate(row):
+            r, b, g, a = pixel
+            if a == 0:
+                new_row[i] = (255, 255, 255)
         new_rows.append(new_row)
 
     # Convert row list into list of pixels
@@ -183,9 +188,9 @@ def process_image(image):
     img.putdata(new_pixels)
 
     # Crop image
-    img = img.crop(box)
+    # img = img.crop(box)
 
-    # img.show()
+    img.show()
 
     # Image bytes
     img_byte_arr = BytesIO()
@@ -197,7 +202,7 @@ def process_image(image):
 
 
 if __name__ == '__main__':
-    res = requests.get('https://a.fsimg.co.nz/pkimg-prod/Product/fan/image/200x200/5258298.png')
+    res = requests.get('https://a.fsimg.co.nz/pkimg-prod/Product/fan/image/500x500/5259791.png')
     image = process_response_content(res.content)
     # print(type(image.read()))
     pass
