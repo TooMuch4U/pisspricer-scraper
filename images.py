@@ -142,7 +142,7 @@ def remove_background_png(pixel_list, width, height, tolerance=10):
         # Right -> Left
         for i in range(width - 1, -1, -1):
             r, b, g, a = row[i]
-            if is_white(r, b, g, tolerance):
+            if is_white(r, b, g, tolerance, a=a):
                 new_row[i] = (255, 255, 255)
                 pass
             else:
@@ -185,7 +185,7 @@ def process_image(image):
     # Crop image
     img = img.crop(box)
 
-    img.show()
+    # img.show()
 
     # Image bytes
     img_byte_arr = BytesIO()
@@ -197,7 +197,7 @@ def process_image(image):
 
 
 if __name__ == '__main__':
-    res = requests.get('https://static.countdown.co.nz/assets/product-images/zoom/7501064191367.jpg')
+    res = requests.get('https://a.fsimg.co.nz/pkimg-prod/Product/fan/image/200x200/5258298.png')
     image = process_response_content(res.content)
     # print(type(image.read()))
     pass
