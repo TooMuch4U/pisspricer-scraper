@@ -95,7 +95,7 @@ def remove_background_jpeg(pixel_list, width, height, tolerance=100):
     return box, new_pixels
 
 
-def remove_background_png(pixel_list, width, height, tolerance=10):
+def remove_background_png(pixel_list, width, height, tolerance=40):
     """
     Iterates through each row, setting pixels left and right of the image that are white to transperant
     :param height: Height of image
@@ -118,6 +118,12 @@ def remove_background_png(pixel_list, width, height, tolerance=10):
     for h in range(0, height):
         row = pixel_list[(width * h):(width * (h + 1))]
         new_row = [(r, b, g) for r, b, g, _ in row]
+
+        # Check if the row is all white
+        row_white = all([p == (255,255,255,255) for p in row]) or all([a == 0 for _, _, _, a in row])
+        if not row_white:
+            # Row is not all white, make sure is_in is true
+            is_in = True
 
         # Left -> Right
         for i, pixel in enumerate(row):
@@ -202,7 +208,7 @@ def process_image(image):
 
 
 if __name__ == '__main__':
-    res = requests.get('https://storage.googleapis.com/pisspricer-bucket-dev/items/14593.jpeg')
+    res = requests.get('https://a.fsimg.co.nz/pkimg-prod/Product/fan/image/500x500/5006966.png')
     image = process_response_content(res.content)
     # print(type(image.read()))
     pass
