@@ -188,7 +188,7 @@ def process_image(image):
     img.putdata(new_pixels)
 
     # Crop image
-    # img = img.crop(box)
+    img = img.crop(box)
 
     # img.show()
 
@@ -202,7 +202,7 @@ def process_image(image):
 
 
 if __name__ == '__main__':
-    res = requests.get('https://a.fsimg.co.nz/pkimg-prod/Product/fan/image/500x500/5259791.png')
+    res = requests.get('https://storage.googleapis.com/pisspricer-bucket-dev/items/14593.jpeg')
     image = process_response_content(res.content)
     # print(type(image.read()))
     pass
