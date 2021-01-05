@@ -190,7 +190,7 @@ def process_image(image):
     # Crop image
     # img = img.crop(box)
 
-    img.show()
+    # img.show()
 
     # Image bytes
     img_byte_arr = BytesIO()
