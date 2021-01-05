@@ -337,6 +337,7 @@ class Pisspricer:
                 has_image = True
                 for cur_item in all_items:
                     if cur_item["sku"] == item["sku"]:
+                        # Check if item doesn't have an image
                         if cur_item["hasImage"] == 0:
                             has_image = False
                         break
