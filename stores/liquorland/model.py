@@ -255,7 +255,7 @@ class LiquorlandModel:
         else:
             price_str = price_span.getText()
             sale_price_str = item_div.find("span", {"class": "SpecialPriceFormat2"}).getText()
-            sale_price = float(sale_price_str.strip('$'))
+            sale_price = float(sale_price_str.strip('$').replace(",", ''))
         price = float(price_str.strip("$").replace(",", ''))
 
         # Image
