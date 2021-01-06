@@ -120,7 +120,7 @@ def remove_background_png(pixel_list, width, height, tolerance=40):
         new_row = [(r, b, g) for r, b, g, _ in row]
 
         # Check if the row is all white
-        row_white = all([p == (255,255,255,255) for p in row]) or all([a == 0 for _, _, _, a in row])
+        row_white = all([is_white(r, g, b, tolerance, a=a) for r, g, b, a in row])
         if not row_white:
             # Row is not all white, make sure is_in is true
             is_in = True
