@@ -38,7 +38,7 @@ class HenrysModel(Model):
               "subcategoryId": 0,
               "stdDrinks": 0,
               "alcoholContent": 0,
-              "volumeTotal": 0,
+              "volumeEach": 0,
               "barcode": "string",
               "salePrice": 0,
               "price": 0,

@@ -205,7 +205,7 @@ class LiquorlandModel:
             "price": price,
             "salePrice": sale_price,
             "stock": stock,
-            "volumeTotal": volume,
+            "volumeEach": volume,
             "url": url,
             "internalSku": sku,
             "storeId": item["storeId"],

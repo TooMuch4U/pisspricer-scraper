@@ -19,7 +19,7 @@ def process_henry_items(items):
               "subcategoryId": 0,
               "stdDrinks": 0,
               "alcoholContent": 0,
-              "volumeTotal": 0,
+              "volumeEach": 0,
               "barcode": "string",
               "salePrice": 0,
               "price": 0,
@@ -58,7 +58,7 @@ def process_henry_item(item):
     else:
         new_item['price'] = round(item['productPrice'], 2)
         new_item['salePrice'] = None
-    new_item['volumeTotal'] = get_volume(new_item['name'])
+    new_item['volumeEach'] = get_volume(new_item['name'])
     new_item['internalSku'] = str(item['id'])
     new_item['url'] = item['url']
     new_item['henryStores'] = item['sites']
