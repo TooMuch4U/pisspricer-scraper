@@ -227,10 +227,10 @@ class Countdown(generic_store.Store):
         #                                         printer=(self.print_progress, len(new_images), "upload item images"))
 
         # Put price data into pisspricer api
-        # prices_list = self._create_price_list(stores, cd_items_dict, barcodes)
-        # price_data_res = custom_reqs.put_prices(prices_list,
-        #                                         api.url,
-        #                                         headers=api.headers)
+        prices_list = self._create_price_list(stores, cd_items_dict, barcodes)
+        price_data_res = custom_reqs.put_prices(prices_list,
+                                                api.url,
+                                                headers=api.headers)
 
     @staticmethod
     def _create_price_list(stores, cd_items_dict, barcodes):
