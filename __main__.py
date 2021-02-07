@@ -11,11 +11,14 @@ STORE_DICT = {
 
 def main():
     args = sys.argv[1:]
-    store_name = args[1]
-    if args[0] == 'scrape':
-        scrape(store_name)
-    elif args[0] == 'find_stores':
-        find_stores(store_name)
+    if args[0] == 'scrape-all':
+        scrape_all()
+    else:
+        store_name = args[1]
+        if args[0] == 'scrape':
+            scrape(store_name)
+        elif args[0] == 'find_stores':
+            find_stores(store_name)
 
 
 def scrape(store_name):
@@ -31,8 +34,9 @@ def find_stores(store_name):
 
 
 def scrape_all():
-    cd = countdown.Countdown()
-    cd.update_locations()
+    for store_class in STORE_DICT.values():
+        store_scraper = store_class()
+        store_scraper.update_all_items()
 
 
 if __name__ == '__main__':
