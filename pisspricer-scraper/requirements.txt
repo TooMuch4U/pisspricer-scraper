@@ -1,0 +1,6 @@
+Pillow
+beautifulsoup4
+pandas
+aiohttp
+requests==2.24.0
+python-dotenv=0.14.0
