@@ -35,8 +35,11 @@ def find_stores(store_name):
 
 def scrape_all():
     for store_class in STORE_DICT.values():
-        store_scraper = store_class()
-        store_scraper.update_all_items()
+        try:
+            store_scraper = store_class()
+            store_scraper.update_all_items()
+        except Exception as err:
+            print(f"\n\n{err}\n\n")
 
 
 if __name__ == '__main__':
