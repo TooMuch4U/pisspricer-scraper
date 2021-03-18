@@ -14,7 +14,7 @@ the pisspricer api.
 	```
 2. Install pip dependencies.
 	```bash
-	pip install < requirements.txt
+	pip install -r requirements.txt
 	```
 3. Set the following environment variables.
 	```
