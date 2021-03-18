@@ -1,6 +1,5 @@
 # Pisspricer Scraper CLI
-A python CLI application used to scrape, process and upload liquor prices to
-the pisspricer api.
+A Python CLI application used to scrape, process and upload liquor prices for pisspricer.
 
 # Requirements
 - git
