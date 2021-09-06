@@ -39,3 +39,9 @@ The store locations for a store can be updated with
 python3 pisspricer-scraper find_stores <store_name>
 ```
 
+# Automated Scraping
+A crontab job can be setup to run the scraping script each day. Note the python binary in a virtual environment is being used, and the output being written to a log file.
+```bash
+0 4 * * * /pathtorepo/pisspricer-scraper/venv/bin/python /pathtorepo/pisspricer-scraper/pisspricer-scraper scrape-all > ~/cron.log 2>&1
+```
+
