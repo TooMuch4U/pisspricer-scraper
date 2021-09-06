@@ -40,7 +40,7 @@ python3 pisspricer-scraper find_stores <store_name>
 ```
 
 # Automated Scraping
-A crontab job can be setup to run the scraping script each day. The following will run scrape all stores at 4:00am each morning. 
+A crontab job can be setup to run the scraping script each day. The following will scrape all stores at 4:00am each morning. 
 1. Edit the crontab.
 	```bash
 	crontab -e
