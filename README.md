@@ -40,8 +40,14 @@ python3 pisspricer-scraper find_stores <store_name>
 ```
 
 # Automated Scraping
-A crontab job can be setup to run the scraping script each day. Note the python binary in a virtual environment is being used, and the output being written to a log file.
-```bash
-0 4 * * * /pathtorepo/pisspricer-scraper/venv/bin/python /pathtorepo/pisspricer-scraper/pisspricer-scraper scrape-all > ~/cron.log 2>&1
-```
+A crontab job can be setup to run the scraping script each day. The following will run scrape all stores at 4:00am each morning. 
+1. Edit the crontab.
+	```bash
+	crontab -e
+	```
+2. Paste the following at the bottom of the file.
+	```bash
+	0 4 * * * /pathtorepo/pisspricer-scraper/venv/bin/python /pathtorepo/pisspricer-scraper/pisspricer-scraper scrape-all > ~/cron.log 2>&1
+	```
+Note: a python binary in a virtual environment is being used, and the output is being written to a log file.
 
